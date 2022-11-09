@@ -1,59 +1,52 @@
 ﻿using System.Diagnostics;
-using System.Text;
 
 namespace Homework1
 {
-    class Program
+    internal static class Program
     {
+        private static int _currentThreadId = Environment.CurrentManagedThreadId;
+
         public static void Main()
         {
+            var data = new List<long>();
             var process = Process.GetCurrentProcess();
-            var data = new List<Tuple<int, long>>();
             process.ProcessorAffinity = (IntPtr) Math.Pow(2, Environment.ProcessorCount - 1);
             process.PriorityClass = ProcessPriorityClass.RealTime;
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            var startTime = DateTime.Now;
             var thread = new Thread(() =>
             {
-                for (var i = 0; i < 100000; i++)
+                while ((DateTime.Now - startTime).Seconds < 1)
                 {
-                    var str = new StringBuilder("a");
-                    for (var j = 0; j < 100; j++)
-                        str.Append('a');
-                    data.Add(Tuple.Create(1, stopwatch.ElapsedMilliseconds));
+                    if (_currentThreadId != Environment.CurrentManagedThreadId)
+                    {
+                        _currentThreadId = Environment.CurrentManagedThreadId;
+                        data.Add(Convert.ToInt64((DateTime.Now-DateTime.UnixEpoch).TotalMilliseconds));
+                    }
                 }
             });
             var thread2 = new Thread(() =>
             {
-                for (var i = 0; i < 100000; i++)
+                while ((DateTime.Now - startTime).Seconds < 1)
                 {
-                    var str = new StringBuilder("a");
-                    for (var j = 0; j < 100; j++)
-                        str.Append('a');
-                    data.Add(Tuple.Create(2, stopwatch.ElapsedMilliseconds));
+                    if (_currentThreadId != Environment.CurrentManagedThreadId)
+                    {
+                        _currentThreadId = Environment.CurrentManagedThreadId;
+                        data.Add(Convert.ToInt64((DateTime.Now-DateTime.UnixEpoch).TotalMilliseconds));
+                    }
                 }
             });
             thread.Start();
             thread2.Start();
             thread.Join();
             thread2.Join();
-            var count = 0;
-            long sum = 0;
-            long temp = 0;
-            var threadNum = 1;
-            foreach (var item in data)
+            var previousTime = data.First();
+            var result = new List<long>();
+            foreach (var nextTime in data.Skip(1))
             {
-                if (item.Item1 != threadNum)
-                {
-                    threadNum = item.Item1;
-                    count++;
-                    sum += (item.Item2 - temp);
-                    temp = item.Item2;
-                }
+                result.Add(nextTime-previousTime);
+                previousTime = nextTime;
             }
-
-            // ReSharper disable once IntDivisionByZero
-            Console.WriteLine(sum / count);
+            Console.WriteLine(result.Average());
         }
     }
 }
