@@ -11,7 +11,7 @@ public class DisposableClass : IDisposable
     {
         _keysToLock = new HashSet<string>(lockableObject);
         lock (KeysThreadPairList)
-            KeysThreadPairList.Add((new HashSet<string>(lockableObject), Thread.CurrentThread));
+            KeysThreadPairList.Add((_keysToLock, Thread.CurrentThread));
         if (AreKeysBlocked(_keysToLock))
         {
             WaitForReleaseObject();

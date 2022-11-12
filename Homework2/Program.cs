@@ -4,12 +4,13 @@ public static class Program
 {
     public static void Main()
     {
-        var multiLock = new MultiLock();
-        var testVariable = new[]{"1","4"};
-        var testVariable2 = new[]{"1","2","3"};
+        var testVariable = new[]{"foo","bar","z"};
+        var testVariable2 = new[] {"foo"};
+        var testVariable3 = new[] {"bar", "z"};
+        var multilock = new MultiLock();
         var thread1 = new Thread(() =>
         {
-            using (multiLock.AcquireLock(testVariable))
+            using (multilock.AcquireLock(testVariable))
             {
                 Thread.Sleep(1000);
             }
@@ -18,11 +19,14 @@ public static class Program
         var thread2 = new Thread(() =>
         {
             Thread.Sleep(500);
-            using(multiLock.AcquireLock(testVariable2))
+            using(multilock.AcquireLock(testVariable2))
             {
                 Thread.Sleep(500);
+                using (multilock.AcquireLock(testVariable3))
+                {
+                    
+                }
             }
-            
         });
         thread1.Start();
         thread2.Start();
