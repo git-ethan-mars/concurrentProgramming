@@ -1,13 +1,11 @@
-﻿using System.Text;
-
-namespace Homework2;
+﻿namespace Homework2;
 
 public static class Program
 {
     public static void Main()
     {
         var testVariable = new[]{"key1","key2","key3"};
-        var testVariable2 = new[] {"key1", "key4", "key5"};
+        var testVariable2 = new[] {"key1", "key5", "key6"};
         var multilock = new MultiLock();
         var thread1 = new Thread(() =>
         {
@@ -24,8 +22,10 @@ public static class Program
         var thread2 = new Thread(() =>
         {
             Thread.Sleep(500);
-            multilock.AcquireLock(testVariable2);
-            Console.WriteLine("2 LOCKED");
+            using (multilock.AcquireLock(testVariable2))
+            {
+                Console.WriteLine("2 LOCKED");
+            }
             Console.WriteLine("2 UNLOCKED");
         });
         thread1.Start();

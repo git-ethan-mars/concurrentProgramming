@@ -3,13 +3,11 @@
 public class MultiLock : IMultiLock
 {
     private static Dictionary<string, object> ObjectByKey = new();
-    private string[] currentKeys;
 
     public IDisposable AcquireLock(params string[] keys)
     {
         foreach (var key in keys)
         {
-            currentKeys = keys;
             if (!ObjectByKey.ContainsKey(key))
             {
                 ObjectByKey[key] = new();
@@ -20,15 +18,6 @@ public class MultiLock : IMultiLock
             Monitor.Enter(ObjectByKey[key]);
 
 
-        return this;
-    }
-
-    public void Dispose()
-    {
-        foreach (var key in currentKeys)
-        {
-            Console.WriteLine(key);
-            Monitor.Exit(ObjectByKey[key]);
-        }
+        return new Disposable(keys.Select(key => ObjectByKey[key]).ToArray());
     }
 }
