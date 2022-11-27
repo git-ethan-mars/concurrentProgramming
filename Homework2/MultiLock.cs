@@ -1,16 +1,16 @@
 ﻿namespace Homework2;
 
-public class MultiLock : IMultiLock
+public static class MultiLock
 {
-    private static Dictionary<string, object> ObjectByKey = new();
+    private static readonly Dictionary<string, object> ObjectByKey = new();
 
-    public IDisposable AcquireLock(params string[] keys)
+    public static IDisposable AcquireLock(params string[] keys)
     {
         foreach (var key in keys)
         {
             if (!ObjectByKey.ContainsKey(key))
             {
-                ObjectByKey[key] = new();
+                ObjectByKey[key] = new object();
             }
         }
 

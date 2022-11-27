@@ -1,4 +1,6 @@
-﻿namespace Homework2;
+﻿using System.Transactions;
+
+namespace Homework2;
 
 public static class Program
 {
@@ -6,10 +8,9 @@ public static class Program
     {
         var testVariable = new[]{"key1","key2","key3"};
         var testVariable2 = new[] {"key1", "key5", "key6"};
-        var multilock = new MultiLock();
         var thread1 = new Thread(() =>
         {
-            using (multilock.AcquireLock(testVariable))
+            using (MultiLock.AcquireLock(testVariable))
             {
                 Console.WriteLine("1 LOCKED");
                 Thread.Sleep(1000);
@@ -22,7 +23,7 @@ public static class Program
         var thread2 = new Thread(() =>
         {
             Thread.Sleep(500);
-            using (multilock.AcquireLock(testVariable2))
+            using (MultiLock.AcquireLock(testVariable2))
             {
                 Console.WriteLine("2 LOCKED");
             }
