@@ -6,8 +6,8 @@ public static class Program
 {
     public static void Main()
     {
-        var testVariable = new[]{"key1","key2","key3"};
-        var testVariable2 = new[] {"key1", "key5", "key6"};
+        var testVariable = new[]{"key1","key2"};
+        var testVariable2 = new[] {"key2", "key1"};
         var thread1 = new Thread(() =>
         {
             using (MultiLock.AcquireLock(testVariable))
@@ -22,7 +22,6 @@ public static class Program
         });
         var thread2 = new Thread(() =>
         {
-            Thread.Sleep(500);
             using (MultiLock.AcquireLock(testVariable2))
             {
                 Console.WriteLine("2 LOCKED");

@@ -14,10 +14,30 @@ public static class MultiLock
             }
         }
 
-        foreach (var key in keys)
-            Monitor.Enter(ObjectByKey[key]);
+        bool lockTaken;
+        var sortedKeys = keys.OrderBy(k => k).ToArray();
+        try
+        {
 
+            foreach (var key in sortedKeys)
+            {
+                lockTaken = false;
+                Monitor.Enter(ObjectByKey[key], ref lockTaken);
+            }
 
-        return new Disposable(keys.Select(key => ObjectByKey[key]).ToArray());
+            return new Disposable(sortedKeys.Reverse().Select(key => ObjectByKey[key]).ToArray());
+        }
+        catch (Exception)
+        {
+            foreach (var key in  sortedKeys.Reverse())
+            {
+                if (Monitor.IsEntered(ObjectByKey[key]))
+                {
+                    Monitor.Exit(key);
+                }
+            }
+            throw;
+        }
     }
+
 }
