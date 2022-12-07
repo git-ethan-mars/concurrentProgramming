@@ -5,11 +5,11 @@ namespace Homework3
 {
     class Program
     {
-        private static readonly Stack<int> Stack = new();
+        private static Stack<int> Stack;
 
         static void Worker1()
         {
-            for (var i = 0; i < 500000; i++)
+            for (var i = 0; i < 50000; i++)
             {
                 Stack.Push(i);
             }
@@ -17,7 +17,7 @@ namespace Homework3
 
         static void Worker2()
         {
-            var i = 50000;
+            var i = 2000;
             while (i != 0)
                 if (Stack.TryPop(out var item))
                 {
@@ -27,8 +27,9 @@ namespace Homework3
 
         static void Main(string[] args)
         {
+            Stack = new Stack<int>();
             var thread1 = new Thread(Worker1);
-            var thread2 = new Thread(Worker2);
+            var thread2 = new Thread(Worker1);
             var thread3 = new Thread(Worker2);
             thread1.Start();
             thread2.Start();
@@ -36,7 +37,6 @@ namespace Homework3
             thread1.Join();
             thread2.Join();
             thread3.Join();
-            //Stack.Print();
             Console.WriteLine(Stack.Count);
         }
     }

@@ -8,31 +8,36 @@ namespace Homework3
         public class Node
         {
             public readonly T Value;
-            public Node Next;
+            public readonly Node Next;
+            public readonly int Count;
 
-            public Node(T value)
+            public Node(T value, int count, Node next)
             {
                 Value = value;
+                Count = count;
+                Next = next;
             }
         }
 
         private Node _head;
-        private int _count;
-
+        
         public void Push(T item)
         {
-            var head = _head;
-            var newNode = new Node(item);
             var spinWait = new SpinWait();
-            while (Interlocked.CompareExchange(ref _head, newNode, head) != head)
+            while (true)
             {
-                head = _head;
+                var head = _head;
+                var count = 1;
+                if (head is not null)
+                    count = head.Count + 1;
+                var newNode = new Node(item, count, head);
+                if (Interlocked.CompareExchange(ref _head, newNode, newNode.Next) == newNode.Next)
+                {
+                    break;
+                }
+
                 spinWait.SpinOnce();
             }
-
-            _head = newNode;
-            _head.Next = head;
-            Interlocked.Increment(ref _count);
         }
 
         public bool TryPop(out T item)
@@ -50,14 +55,23 @@ namespace Homework3
                 if (Interlocked.CompareExchange(ref _head, head.Next, head) == head)
                 {
                     item = head.Value;
-                    Interlocked.Decrement(ref _count);
                     return true;
                 }
+
                 spinWait.SpinOnce();
             }
         }
 
-        public int Count => _count;
+        public int Count {
+            get
+            {
+                var head = _head;
+                if (head is not null)
+                    return head.Count;
+                return 0;
+            }
+        }
+
 
         public int SlowCount()
         {
