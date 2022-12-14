@@ -1,4 +1,6 @@
-﻿namespace CustomThreadPool
+﻿using CustomThreadPool.ThreadPools;
+
+namespace CustomThreadPool
 {
     public static class Program
     {

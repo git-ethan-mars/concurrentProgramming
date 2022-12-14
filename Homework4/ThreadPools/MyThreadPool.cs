@@ -1,23 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.Collections.Concurrent;
 using System.Threading;
 
-namespace CustomThreadPool
+namespace CustomThreadPool.ThreadPools
 {
     public class MyThreadPool : IThreadPool
     {
         private long _tasksProcessedCount;
-        private readonly Queue<Action> _queue;
+        private readonly ConcurrentQueue<Action> _queue;
         private readonly int _maxThreadsCount;
-        private readonly Thread[] _threads;
 
 
         public MyThreadPool()
         {
-            _queue = new Queue<Action>();
+            _queue = new ConcurrentQueue<Action>();
             _maxThreadsCount = Environment.ProcessorCount * 2;
-            _threads = new Thread[_maxThreadsCount];
             Initialize();
         }
 
@@ -29,7 +26,6 @@ namespace CustomThreadPool
                 {
                     IsBackground = true,
                 };
-                _threads[i] = thread;
                 thread.Start();
             }
         }
@@ -38,29 +34,24 @@ namespace CustomThreadPool
         {
             while (true)
             {
-                lock (_queue)
+                if (_queue.TryDequeue(out var action))
                 {
-                    if (_queue.TryDequeue(out var action))
-                    {
-                        action();
-                        Interlocked.Increment(ref _tasksProcessedCount);
-                        
-                    }
-                    else
-                    {
+                    action();
+                    Interlocked.Increment(ref _tasksProcessedCount);
+                }
+                else
+                {
+                    lock (_queue)
                         Monitor.Wait(_queue);
-                    }
                 }
             }
         }
 
         public void EnqueueAction(Action action)
         {
-            lock (_queue)
-            {
-                _queue.Enqueue(action);
+            _queue.Enqueue(action);
+            lock(_queue)
                 Monitor.Pulse(_queue);
-            }
         }
 
         public long GetTasksProcessedCount()
